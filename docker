@@ -1,0 +1,22 @@
+FROM openjdk:11
+WORKDIR /app
+COPY target/scala-3.4.0/ComposerBasedEscIndexer.jar ComposerBasedEscIndexer.jar
+EXPOSE 8080
+
+RUN apt-get update -y && apt-get install -y \
+    tini \
+    nfs-kernel-server \
+    nfs-common \
+    && apt-get clean
+
+ENV MNT_DIR /mnt/esc-index
+ENV BASE_PATH /mnt/
+ENV INDEX_NAME esc-index
+
+COPY run.sh ./run.sh
+RUN chmod +x ./run.sh
+
+# https://github.com/krallin/tini - avoids zombie processes
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/run.sh"]
+
